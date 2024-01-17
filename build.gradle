@@ -7,21 +7,11 @@ apply plugin: 'opensearch.yaml-rest-test'
 apply plugin: 'opensearch.pluginzip'
 
 def pluginName = 'rename'
-def pluginDescription = 'Custom plugin'
+def pluginDescription = 'Plugin that adds a search processor that calls out to the sycamore remote processor service'
 def projectPath = 'org.opensearch'
-def pathToPlugin = 'path.to.plugin'
-def pluginClassName = 'RenamePlugin'
-group = "RenameGroup"
-
-tasks.register("preparePluginPathDirs") {
-    mustRunAfter clean
-    doLast {
-        def newPath = pathToPlugin.replace(".", "/")
-        mkdir "src/main/java/org/opensearch/$newPath"
-        mkdir "src/test/java/org/opensearch/$newPath"
-        mkdir "src/yamlRestTest/java/org/opensearch/$newPath"
-    }
-}
+def pathToPlugin = 'remoteprocessor'
+def pluginClassName = 'RemoteProcessorPlugin'
+group = "RemoteProcessorGroup"
 
 publishing {
     publications {
