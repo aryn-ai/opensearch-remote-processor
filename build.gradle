@@ -1,10 +1,35 @@
 import org.opensearch.gradle.test.RestIntegTestTask
 
-apply plugin: 'java'
-apply plugin: 'idea'
+buildscript {
+    ext {
+        opensearch_version = System.getProperty("opensearch.version", "3.0.0-SNAPSHOT")
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    dependencies {
+        classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
+    }
+}
+
+plugins {
+    id 'idea'
+    id 'com.google.protobuf' version '0.9.4'
+}
+
 apply plugin: 'opensearch.opensearchplugin'
-apply plugin: 'opensearch.yaml-rest-test'
 apply plugin: 'opensearch.pluginzip'
+
+ext {
+    projectSubstitutions = [:]
+    licenseFile = rootProject.file('LICENSE.txt')
+    noticeFile = rootProject.file('NOTICE')
+}
 
 def pluginName = 'rename'
 def pluginDescription = 'Plugin that adds a search processor that calls out to the sycamore remote processor service'
@@ -36,6 +61,13 @@ publishing {
     }
 }
 
+dependencies {
+    runtimeOnly 'io.grpc:grpc-netty-shaded:1.61.0'
+    implementation 'io.grpc:grpc-protobuf:1.61.0'
+    implementation 'io.grpc:grpc-stub:1.61.0'
+    compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
+}
+
 opensearchplugin {
     name pluginName
     description pluginDescription
@@ -44,28 +76,32 @@ opensearchplugin {
     noticeFile rootProject.file('NOTICE.txt')
 }
 
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.1"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.61.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
 // This requires an additional Jar not published as part of build-tools
 loggerUsageCheck.enabled = false
 
+dependencyLicenses.enabled = false
+thirdPartyAudit.enabled = false
+loggerUsageCheck.enabled = false
 // No need to validate pom, as we do not upload to maven/sonatype
 validateNebulaPom.enabled = false
 
-buildscript {
-    ext {
-        opensearch_version = System.getProperty("opensearch.version", "3.0.0-SNAPSHOT")
-    }
 
-    repositories {
-        mavenLocal()
-        maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
-        mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-
-    dependencies {
-        classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
-    }
-}
 
 repositories {
     mavenLocal()
