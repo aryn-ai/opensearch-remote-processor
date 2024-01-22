@@ -3,6 +3,8 @@ import org.opensearch.gradle.test.RestIntegTestTask
 buildscript {
     ext {
         opensearch_version = System.getProperty("opensearch.version", "3.0.0-SNAPSHOT")
+        grpc_ver = "1.61.0"
+        protobuf_version = "3.25.2"
     }
 
     repositories {
@@ -14,6 +16,10 @@ buildscript {
 
     dependencies {
         classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
+        // classpath 'io.grpc:grpc-protobuf:${grpc_ver}'
+        // classpath 'io.grpc:grpc-stub:${grpc_ver}'
+        // classpath "io.grpc:grpc-services:${grpc_ver}"
+        // classpath "io.grpc:grpc-all:${grpc_ver}"
     }
 }
 
@@ -24,12 +30,6 @@ plugins {
 
 apply plugin: 'opensearch.opensearchplugin'
 apply plugin: 'opensearch.pluginzip'
-
-ext {
-    projectSubstitutions = [:]
-    licenseFile = rootProject.file('LICENSE.txt')
-    noticeFile = rootProject.file('NOTICE')
-}
 
 def pluginName = 'rename'
 def pluginDescription = 'Plugin that adds a search processor that calls out to the sycamore remote processor service'
@@ -62,10 +62,17 @@ publishing {
 }
 
 dependencies {
-    runtimeOnly 'io.grpc:grpc-netty-shaded:1.61.0'
-    implementation 'io.grpc:grpc-protobuf:1.61.0'
-    implementation 'io.grpc:grpc-stub:1.61.0'
-    compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // necessary for Java 9+
+    runtimeOnly "io.grpc:grpc-netty-shaded:${grpc_ver}"
+    implementation "io.grpc:grpc-core:${grpc_ver}"
+    implementation "io.grpc:grpc-api:${grpc_ver}"
+    implementation "io.grpc:grpc-protobuf:${grpc_ver}"
+    implementation "io.grpc:grpc-stub:${grpc_ver}"
+    implementation "io.grpc:grpc-services:${grpc_ver}"
+    implementation "io.grpc:grpc-all:${grpc_ver}"
+    implementation "com.google.protobuf:protobuf-java-util:${protobuf_version}"
+    implementation "com.google.protobuf:protobuf-java:${protobuf_version}"
+    //implementation 'com.google.guava:guava:33.0.0-jre'
+    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 }
 
 opensearchplugin {
@@ -78,11 +85,11 @@ opensearchplugin {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.1"
+        artifact = "com.google.protobuf:protoc:${protobuf_version}"
     }
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.61.0'
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpc_ver}"
         }
     }
     generateProtoTasks {
@@ -97,7 +104,6 @@ loggerUsageCheck.enabled = false
 
 dependencyLicenses.enabled = false
 thirdPartyAudit.enabled = false
-loggerUsageCheck.enabled = false
 // No need to validate pom, as we do not upload to maven/sonatype
 validateNebulaPom.enabled = false
 
