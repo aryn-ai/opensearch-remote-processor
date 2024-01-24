@@ -90,6 +90,16 @@ protobuf {
     }
 }
 
+sourceSets {
+    main {
+        proto {
+            // set this to proto files directory. src/main/proto is included by default so
+            // can skip that one (in fact, must)
+            srcDir 'protocols/remote-processor'
+        }
+    }
+}
+
 // This requires an additional Jar not published as part of build-tools
 loggerUsageCheck.enabled = false
 licenseHeaders.enabled = false
