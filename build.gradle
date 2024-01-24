@@ -4,7 +4,7 @@ buildscript {
     ext {
         opensearch_version = System.getProperty("opensearch.version", "3.0.0-SNAPSHOT")
         grpc_ver = "1.61.0"
-        protobuf_version = "3.25.2"
+        protobuf_version = "3.22.3"
     }
 
     repositories {
@@ -16,10 +16,6 @@ buildscript {
 
     dependencies {
         classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
-        // classpath 'io.grpc:grpc-protobuf:${grpc_ver}'
-        // classpath 'io.grpc:grpc-stub:${grpc_ver}'
-        // classpath "io.grpc:grpc-services:${grpc_ver}"
-        // classpath "io.grpc:grpc-all:${grpc_ver}"
     }
 }
 
@@ -37,6 +33,14 @@ def projectPath = 'org.opensearch'
 def pathToPlugin = 'remoteprocessor'
 def pluginClassName = 'RemoteProcessorPlugin'
 group = "RemoteProcessorGroup"
+
+opensearchplugin {
+    name pluginName
+    description pluginDescription
+    classname "${projectPath}.${pathToPlugin}.${pluginClassName}"
+    licenseFile rootProject.file('LICENSE.txt')
+    noticeFile rootProject.file('NOTICE.txt')
+}
 
 publishing {
     publications {
@@ -63,24 +67,11 @@ publishing {
 
 dependencies {
     runtimeOnly "io.grpc:grpc-netty-shaded:${grpc_ver}"
-    implementation "io.grpc:grpc-core:${grpc_ver}"
     implementation "io.grpc:grpc-api:${grpc_ver}"
     implementation "io.grpc:grpc-protobuf:${grpc_ver}"
     implementation "io.grpc:grpc-stub:${grpc_ver}"
-    implementation "io.grpc:grpc-services:${grpc_ver}"
-    implementation "io.grpc:grpc-all:${grpc_ver}"
-    implementation "com.google.protobuf:protobuf-java-util:${protobuf_version}"
-    implementation "com.google.protobuf:protobuf-java:${protobuf_version}"
-    //implementation 'com.google.guava:guava:33.0.0-jre'
-    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
-}
-
-opensearchplugin {
-    name pluginName
-    description pluginDescription
-    classname "${projectPath}.${pathToPlugin}.${pluginClassName}"
-    licenseFile rootProject.file('LICENSE.txt')
-    noticeFile rootProject.file('NOTICE.txt')
+    implementation 'com.google.guava:guava:33.0.0-jre'
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 protobuf {
@@ -101,7 +92,7 @@ protobuf {
 
 // This requires an additional Jar not published as part of build-tools
 loggerUsageCheck.enabled = false
-
+licenseHeaders.enabled = false
 dependencyLicenses.enabled = false
 thirdPartyAudit.enabled = false
 // No need to validate pom, as we do not upload to maven/sonatype
