@@ -16,6 +16,7 @@ service RemoteProcessorService {
 message ProcessResponseRequest {
 	SearchResponse search_response = 1;
 	SearchRequest search_request = 2;
+	string processor_name = 3;
 }
 
 message ProcessResponseResponse {
