@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.opensearch.action.search";
+option java_outer_classname = "PBSearchRequest";
+
+message SearchRequest {
+	optional string local_cluster_alias = 1;
+	optional int64 absolute_start_millis = 2;
+	repeated string indices = 3;
+	bool ccs_minimize_round_trips = 4;
+	optional string routing = 5;
+	optional string preference = 6;
+	SearchSource source = 7;
+	SearchType search_type = 8;
+	optional Scroll scroll = 9;
+	bool request_cache = 10;
+	int32 batched_reduce_size = 11;
+	int32 max_concurrent_shard_requests = 12;
+	optional bool phase_took = 13;
+	optional int32 prefilter_size = 14;
+	optional string pipeline = 15;
+	IndicesOptions indices_options = 16;
+	bool final_reduce = 17;
+	optional int64 cancel_after_millis = 18;
+
+	enum SearchType {
+		QUERY_THEN_FETCH = 0;
+		DFS_QUERY_THEN_FETCH = 1;
+	}
+}
+
+message IndicesOptions {
+	bool wildcard_states_open = 1;
+	bool wildcard_states_closed = 2;
+	bool wildcard_states_hidden = 3;
+
+	bool ignore_unavailable = 4;
+	bool ignore_aliases = 5;
+	bool allow_no_indices = 6;
+	bool forbid_aliases_to_multiple_indices = 7;
+	bool forbid_closed_indices = 8;
+	bool ignore_throttled = 9;
+}
+
+message Scroll {
+	int64 keep_alive_millis = 1;
+}
+
+message SearchSource {
+	bytes source_bytes = 1;
+}
+
