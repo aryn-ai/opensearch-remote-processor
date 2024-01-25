@@ -27,7 +27,7 @@ plugins {
 apply plugin: 'opensearch.opensearchplugin'
 apply plugin: 'opensearch.pluginzip'
 
-def pluginName = 'remote-processor'
+def pluginName = "remote-processor-${opensearch_version}"
 def pluginDescription = 'Plugin that adds a search processor that calls out to the sycamore remote processor service'
 def projectPath = 'org.opensearch'
 def pathToPlugin = 'remoteprocessor'
