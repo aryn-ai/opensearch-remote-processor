@@ -3,7 +3,7 @@ import org.opensearch.gradle.test.RestIntegTestTask
 buildscript {
     ext {
         opensearch_version = System.getProperty("opensearch.version", "2.12.0-SNAPSHOT")
-        grpc_ver = "1.61.0"
+        grpc_ver = "1.60.0"
         protobuf_version = "3.22.3"
     }
 
@@ -22,6 +22,7 @@ buildscript {
 plugins {
     id 'idea'
     id 'com.google.protobuf' version '0.9.4'
+    id 'io.freefair.lombok' version '8.4'
 }
 
 apply plugin: 'opensearch.opensearchplugin'
@@ -66,10 +67,11 @@ publishing {
 }
 
 dependencies {
-    runtimeOnly "io.grpc:grpc-netty-shaded:${grpc_ver}"
+    implementation "io.grpc:grpc-netty:${grpc_ver}"
     implementation "io.grpc:grpc-api:${grpc_ver}"
     implementation "io.grpc:grpc-protobuf:${grpc_ver}"
     implementation "io.grpc:grpc-stub:${grpc_ver}"
+    implementation "io.grpc:grpc-all:${grpc_ver}"
     implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'com.google.code.gson:gson:2.10.1'
 }
@@ -105,6 +107,7 @@ loggerUsageCheck.enabled = false
 licenseHeaders.enabled = false
 dependencyLicenses.enabled = false
 thirdPartyAudit.enabled = false
+forbiddenApisMain.enabled = false
 // No need to validate pom, as we do not upload to maven/sonatype
 validateNebulaPom.enabled = false
 

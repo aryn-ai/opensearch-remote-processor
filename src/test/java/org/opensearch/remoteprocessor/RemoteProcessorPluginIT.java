@@ -36,6 +36,6 @@ public class RemoteProcessorPluginIT extends OpenSearchIntegTestCase {
         String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
         logger.info("response body: {}", body);
-        org.hamcrest.MatcherAssert.assertThat("did not contain plugin", body, containsString("rename"));
+        org.hamcrest.MatcherAssert.assertThat("did not contain plugin", body, containsString("remote-processor"));
     }
 }

@@ -29,9 +29,13 @@ import org.opensearch.search.pipeline.PipelineProcessingContext;
 import org.opensearch.search.pipeline.Processor;
 import org.opensearch.search.pipeline.SearchResponseProcessor;
 
+import com.google.gson.Gson;
+
+import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
 import org.opensearch.grpc.ProcessResponseRequest;
@@ -50,8 +54,15 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
     protected RemoteSearchResponseProcessor(String tag, String description, boolean ignoreFailure, String endpoint, String processorName) {
         super(tag, description, ignoreFailure);
         this.endpoint = endpoint;
+        System.out.println(this.endpoint);
         this.processorName = processorName;
-        ManagedChannel chan = Grpc.newChannelBuilder(this.endpoint, InsecureChannelCredentials.create()).build();
+        System.out.println(this.processorName);
+        ChannelCredentials creds = InsecureChannelCredentials.create();
+        System.out.println(new Gson().toJson(creds));
+        ManagedChannelBuilder b = Grpc.newChannelBuilder(this.endpoint, creds);
+        System.out.println(new Gson().toJson(b));
+        ManagedChannel chan = b.build();
+        System.out.println(chan.toString());
         this.rpsRpcClient = RemoteProcessorServiceGrpc.newStub(chan);
     }
 
