@@ -1,16 +1,18 @@
 # Remote Search Processor Plugin
 This plugin adds a remote search processor that calls out to the sycamore search processing service.
 
-### Editing the CI workflow
-You may want to edit the CI of your new repo.
-  
-In your new GitHub repo, head over to `.github/workflows/CI.yml`. This file describes the workflow for testing new push or pull-request actions on the repo.
-Currently, it is configured to build the plugin and run all the tests in it.
-
-You may need to alter the dependencies required by your new plugin.
-Also, the **OpenSearch version** in the `Build OpenSearch` and in the `Build and Run Tests` steps should match your plugins version in the `build.gradle` file.
-
-To view more complex CI examples you may want to checkout the workflows in official OpenSearch plugins, such as [anomaly-detection](https://github.com/opensearch-project/anomaly-detection/blob/main/.github/workflows/test_build_multi_platform.yml).
+## Instructions for use with remote-processor-service
+> assumes you came from [remote-processor-service](https://github.com/aryn-ai/remote-processor-service) instructions
+This part should be fairly simple. I think gradle handles all of the code-gen, so all that should be needed is to checkout 2.x and get the proto files
+```
+git switch 2.x
+git submodule update --remote
+```
+and then build a zip with
+```
+./gradlew assemble
+```
+the zip is at `build/distributions/remote-processor-2.12.0-SNAPSHOT.zip`
 
 ## License
 This code is licensed under the Apache 2.0 License. See [LICENSE.txt](LICENSE.txt).
