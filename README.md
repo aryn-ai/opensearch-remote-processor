@@ -2,7 +2,8 @@
 This plugin adds a remote search processor that calls out to the sycamore search processing service.
 
 ## Instructions for use with remote-processor-service
-> assumes you came from [remote-processor-service](https://github.com/aryn-ai/remote-processor-service) instructions
+
+ -> assumes you came from [remote-processor-service](https://github.com/aryn-ai/remote-processor-service) instructions
 
 This part should be fairly simple. I think gradle handles all of the code-gen, so all that should be needed is to checkout 2.x and get the proto files
 ```
