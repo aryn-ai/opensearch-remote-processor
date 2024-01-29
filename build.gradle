@@ -16,6 +16,7 @@ buildscript {
 
     dependencies {
         classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
+        classpath "io.grpc:grpc-all:${grpc_ver}"
     }
 }
 
@@ -67,7 +68,7 @@ publishing {
 }
 
 dependencies {
-    implementation "io.grpc:grpc-netty:${grpc_ver}"
+    runtimeOnly "io.grpc:grpc-netty-shaded:${grpc_ver}"
     implementation "io.grpc:grpc-api:${grpc_ver}"
     implementation "io.grpc:grpc-protobuf:${grpc_ver}"
     implementation "io.grpc:grpc-stub:${grpc_ver}"
