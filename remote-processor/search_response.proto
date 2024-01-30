@@ -41,8 +41,8 @@ message PhaseTook {
 
 message SearchResponseSections {
     SearchHits hits = 1;
-    Aggregations aggregations = 2;
-    Suggest suggest = 3;
+    optional Aggregations aggregations = 2;
+    optional Suggest suggest = 3;
     SearchProfileShardResults profile_results = 4;
     bool timed_out = 5;
     bool terminated_early = 6;
