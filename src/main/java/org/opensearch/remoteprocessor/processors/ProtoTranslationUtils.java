@@ -33,6 +33,7 @@ import org.opensearch.pb.action.search.Scroll;
 import org.opensearch.pb.action.search.SearchExtBuilder;
 import org.opensearch.pb.action.search.SearchHit;
 import org.opensearch.pb.action.search.SearchHits;
+import org.opensearch.pb.action.search.SearchRequest;
 import org.opensearch.pb.action.search.SearchResponseSections;
 import org.opensearch.pb.action.search.SearchShardFailure;
 import org.opensearch.pb.action.search.SearchShardTarget;
@@ -50,10 +51,9 @@ public class ProtoTranslationUtils {
     
     public static org.opensearch.pb.action.search.SearchRequest SearchRequestOsToPb(org.opensearch.action.search.SearchRequest request) throws IOException {
 
-        return org.opensearch.pb.action.search.SearchRequest.newBuilder()
+        SearchRequest.Builder b = org.opensearch.pb.action.search.SearchRequest.newBuilder()
             .addAllIndices(Arrays.asList(request.indices()))
             .setBatchedReduceSize(request.getBatchedReduceSize())
-            .setCancelAfterMillis(request.getCancelAfterTimeInterval().getMillis())
             .setCcsMinimizeRoundTrips(request.isCcsMinimizeRoundtrips())
             .setIndicesOptions(
                 IndicesOptions.newBuilder()
@@ -68,24 +68,42 @@ public class ProtoTranslationUtils {
                 .setWildcardStatesOpen(request.indicesOptions().expandWildcardsOpen())
                 .build())
             .setMaxConcurrentShardRequests(request.getMaxConcurrentShardRequests())
-            .setPhaseTook(request.isPhaseTook())
-            .setPipeline(request.pipeline())
-            .setPreference(request.preference())
-            .setPrefilterSize(request.getPreFilterShardSize())
-            .setRequestCache(request.requestCache())
-            .setRouting(request.routing())
-            .setScroll(
-                Scroll.newBuilder()
-                .setKeepAliveMillis(request.scroll().keepAlive().millis())
-                .build())
+            .setRequestCache(Boolean.TRUE.equals(request.requestCache()))
             .setSearchType(
                 request.searchType() == org.opensearch.action.search.SearchType.QUERY_THEN_FETCH ? 
                     SearchType.QUERY_THEN_FETCH : SearchType.DFS_QUERY_THEN_FETCH)
             .setSource(
                 SearchSource.newBuilder()
                 .setSourceBytes(toCbor(request.source()))
-                .build())
-            .build();
+                .build());
+        //Optional fields
+        if (request.getCancelAfterTimeInterval() != null) {
+            b.setCancelAfterMillis(request.getCancelAfterTimeInterval().millis());
+        }
+        if (request.scroll() != null) {
+            b.setScroll(
+                Scroll.newBuilder()
+                .setKeepAliveMillis(request.scroll().keepAlive().millis())
+                .build());
+        }
+        if (request.isPhaseTook() != null) {
+            b.setPhaseTook(request.isPhaseTook());
+        }
+        if (request.getPreFilterShardSize() != null) {
+            b.setPrefilterSize(request.getPreFilterShardSize());
+        }
+        if (request.pipeline() != null) {
+            b.setPipeline(request.pipeline());
+        }
+        if (request.routing() != null) {
+            b.setRouting(request.routing());
+        }
+        if (request.preference() != null) {
+            b.setPreference(request.preference());
+        }
+
+
+        return b.build();
     }
 
     public static org.opensearch.pb.action.search.SearchResponse SearchResponseOsToPb(org.opensearch.action.search.SearchResponse response) throws IOException {
@@ -95,58 +113,75 @@ public class ProtoTranslationUtils {
             newExts.add(SearchExtBuilder.newBuilder().setSearchExts(toCbor(seb)).build());
         }
 
-        PipedOutputStream os = new PipedOutputStream();
-        PipedInputStream is = new PipedInputStream(os);
-        OutputStreamStreamOutput osso = new OutputStreamStreamOutput(os);
-        InputStreamStreamInput issi = new InputStreamStreamInput(is);
-        response.getPhaseTook().writeTo(osso);
-        Map<String, Long> phaseTookMap = issi.readMap(StreamInput::readString, StreamInput::readLong);
-        issi.close();
+        Map<String, Long> phaseTookMap;
+        if(response.getPhaseTook() != null) {
+            PipedOutputStream os = new PipedOutputStream();
+            PipedInputStream is = new PipedInputStream(os);
+            OutputStreamStreamOutput osso = new OutputStreamStreamOutput(os);
+            InputStreamStreamInput issi = new InputStreamStreamInput(is);
+            response.getPhaseTook().writeTo(osso);
+            phaseTookMap = issi.readMap(StreamInput::readString, StreamInput::readLong);
+            issi.close();
+        } else {
+            phaseTookMap = new HashMap<>();
+        }
 
-        return org.opensearch.pb.action.search.SearchResponse.newBuilder()
+        SearchHits.Builder shb = SearchHits.newBuilder()
+            .setMaxScore(response.getHits().getMaxScore())
+            .setTotalHits(
+                TotalHits.newBuilder()
+                .setValue(response.getHits().getTotalHits().value)
+                .setRelation(
+                    response.getHits().getTotalHits().relation == org.apache.lucene.search.TotalHits.Relation.EQUAL_TO ?
+                    TotalHits.Relation.EQUAL_TO : TotalHits.Relation.GREATER_THAN_OR_EQUAL_TO
+                ))
+            .addAllHits(
+                Arrays.asList(response.getHits().getHits()).stream()
+                .map(ProtoTranslationUtils::translateHitToPb)
+                .collect(Collectors.toList()));
+        if(response.getHits().getCollapseField() != null) {
+            shb.setCollapseField(response.getHits().getCollapseField());
+        }
+        if(response.getHits().getCollapseValues() != null) {
+            shb.addAllCollapseValues(
+                Arrays.asList(response.getHits().getCollapseValues())
+                    .stream()
+                    .map(ProtoTranslationUtils::javaToBytes)
+                    .collect(Collectors.toList())
+            );
+        }
+
+        SearchResponseSections.Builder srsb = SearchResponseSections.newBuilder()
+            .setHits(shb.build())
+            .setTimedOut(Boolean.TRUE.equals(response.isTimedOut()))
+            .setTerminatedEarly(Boolean.TRUE.equals(response.isTerminatedEarly()))
+            .setNumReducePhases(response.getNumReducePhases())
+            .addAllSearchExts(newExts);
+        // Optional fields
+        if(response.getAggregations() != null) {
+            srsb.setAggregations(
+                Aggregations.newBuilder()
+                .setAggregations(toCbor(response.getAggregations()))
+                .build()
+            );
+        }
+        if(response.getSuggest() != null) {
+            srsb.setSuggest(
+                Suggest.newBuilder()
+                .setSuggestions(toCbor(response.getSuggest()))
+                .build()
+            );
+        }  
+
+        org.opensearch.pb.action.search.SearchResponse.Builder srb = org.opensearch.pb.action.search.SearchResponse.newBuilder()
             .setClusters(
+                response.getClusters() == null ? null :
                 Clusters.newBuilder()
                 .setSkipped(response.getClusters().getSkipped())
                 .setSuccessful(response.getClusters().getSuccessful())
                 .setTotal(response.getClusters().getTotal())
                 .build())
-            .setInternalResponse(
-                SearchResponseSections.newBuilder()
-                .setAggregations(
-                    Aggregations.newBuilder()
-                    .setAggregations(toCbor(response.getAggregations())))
-                .setHits(
-                    SearchHits.newBuilder()
-                    .setCollapseField(response.getHits().getCollapseField())
-                    .addAllCollapseValues(
-                        Arrays.asList(response.getHits().getCollapseValues())
-                            .stream()
-                            .map(ProtoTranslationUtils::javaToBytes)
-                            .collect(Collectors.toList()))
-                    .setMaxScore(response.getHits().getMaxScore())
-                    .setTotalHits(
-                        TotalHits.newBuilder()
-                        .setValue(response.getHits().getTotalHits().value)
-                        .setRelation(
-                            response.getHits().getTotalHits().relation == org.apache.lucene.search.TotalHits.Relation.EQUAL_TO ?
-                            TotalHits.Relation.EQUAL_TO : TotalHits.Relation.GREATER_THAN_OR_EQUAL_TO
-                        ))
-                    .addAllHits(
-                        Arrays.asList(response.getHits().getHits()).stream()
-                        .map(ProtoTranslationUtils::translateHitToPb)
-                        .collect(Collectors.toList()))
-                    .build())
-                .setSuggest(
-                    Suggest.newBuilder()
-                    .setSuggestions(toCbor(response.getSuggest()))
-                    .build())
-                .setTimedOut(response.isTimedOut())
-                .setTerminatedEarly(response.isTerminatedEarly())
-                .setNumReducePhases(response.getNumReducePhases())
-                .addAllSearchExts(newExts)
-                .build())
-            .setScrollId(response.getScrollId())
-            .setPointInTimeId(response.pointInTimeId())
+            .setInternalResponse(srsb.build())
             .setTotalShards(response.getTotalShards())
             .setSuccessfulShards(response.getSuccessfulShards())
             .setSkippedShards(response.getSkippedShards())
@@ -164,10 +199,17 @@ public class ProtoTranslationUtils {
                         .build())
                     .build())
                 .collect(Collectors.toList()))
-            .setTookInMillis(response.getTook().millis())
-            .setPhaseTook(PhaseTook.newBuilder().putAllPhaseTookMap(phaseTookMap).build())
-            .build();
+            .setTookInMillis(response.getTook() == null ? null : response.getTook().millis())
+            .setPhaseTook(PhaseTook.newBuilder().putAllPhaseTookMap(phaseTookMap).build());
+        
+        if(response.getScrollId() != null) {
+            srb.setScrollId(response.getScrollId());
+        }
+        if(response.pointInTimeId() != null) {
+            srb.setPointInTimeId(response.pointInTimeId());
+        }
 
+        return srb.build();
     }
 
     public static ByteString toCbor(ToXContent serializable) throws IOException {
@@ -229,6 +271,7 @@ public class ProtoTranslationUtils {
             .setScore(hit.getScore())
             .setId(hit.getId())
             .setNestedId(
+                hit.getNestedIdentity() == null ? null :
                 NestedIdentity.newBuilder()
                 .setField(hit.getNestedIdentity().getField().string())
                 .setOffset(hit.getNestedIdentity().getOffset())
