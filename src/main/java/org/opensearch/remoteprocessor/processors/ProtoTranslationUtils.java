@@ -216,6 +216,7 @@ public class ProtoTranslationUtils {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XContentBuilder builder = XContentType.CBOR.contentBuilder(baos);
         serializable.toXContent(builder, null);
+        builder.close();
         return ByteString.copyFrom(baos.toByteArray());
     }
 
