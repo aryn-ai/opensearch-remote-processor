@@ -3,7 +3,7 @@ import org.opensearch.gradle.test.RestIntegTestTask
 buildscript {
     ext {
         opensearch_version = System.getProperty("opensearch.version", "2.12.0-SNAPSHOT")
-        grpc_ver = "1.57.2"
+        grpc_ver = "1.61.0"
         protobuf_version = "3.22.3"
     }
 
@@ -75,7 +75,7 @@ dependencies {
     implementation "io.grpc:grpc-okhttp:${grpc_ver}"
     implementation "io.grpc:grpc-core:${grpc_ver}"
     implementation "io.grpc:grpc-protobuf-lite:${grpc_ver}"
-    implementation "io.grpc:grpc-all:${grpc_ver}"
+    implementation 'io.perfmark:perfmark-api:0.27.0'
     implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'com.google.code.gson:gson:2.10.1'
 }

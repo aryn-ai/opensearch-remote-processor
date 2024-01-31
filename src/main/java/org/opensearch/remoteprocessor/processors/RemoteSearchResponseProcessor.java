@@ -18,6 +18,8 @@
 package org.opensearch.remoteprocessor.processors;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.Locale;
 import java.util.Map;
 
@@ -56,7 +58,6 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
         ChannelCredentials creds = InsecureChannelCredentials.create();
         ManagedChannelBuilder b = Grpc.newChannelBuilder(this.endpoint, creds);
         ManagedChannel chan = b.build();
-        System.out.println(chan.toString());
         this.rpsRpcClient = RemoteProcessorServiceGrpc.newStub(chan);
     }
 
@@ -76,6 +77,7 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
         // Serialize the request, response, context, and then send it to enpoint.
         // Wait for response, deserialize it, and return it.
             ProcessResponseRequest grpcRequest = buildRequest(request, response, ctx);
+            System.out.println(grpcRequest.toString());
             sendRequest(grpcRequest, ActionListener.wrap(
                 grpcResponse -> {
                     listener.onResponse(parseResponse(grpcResponse, response));
@@ -85,6 +87,7 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
                 }
             ));
         } catch (IOException e) {
+            System.out.println(e.getMessage());
             listener.onFailure(e);
         }
 
@@ -99,20 +102,31 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
     }
 
     private void sendRequest(ProcessResponseRequest request, ActionListener<ProcessResponseResponse> listener) {
-        this.rpsRpcClient.processResponse(request, new StreamObserver<ProcessResponseResponse>() {
-            @Override
-            public void onNext(ProcessResponseResponse response) {
-                listener.onResponse(response);
-            }
+        try {
+            AccessController.doPrivileged((PrivilegedExceptionAction<Void>) () -> {
+                this.rpsRpcClient.processResponse(request, new StreamObserver<ProcessResponseResponse>() {
+                    @Override
+                    public void onNext(ProcessResponseResponse response) {
+                        System.out.println(response.toString());
+                        listener.onResponse(response);
+                    }
 
-            @Override
-            public void onError(Throwable t) {
-                listener.onFailure(new RuntimeException(t));
-            }
+                    @Override
+                    public void onError(Throwable t) {
+                        System.out.println(t.getMessage());
+                        listener.onFailure(new RuntimeException(t));
+                    }
 
-            @Override
-            public void onCompleted() {}
-        });
+                    @Override
+                    public void onCompleted() {
+                        System.out.println("Finished Listening");
+                    }
+                });
+                return null;
+            });
+        } catch (Exception e) {
+            listener.onFailure(e);
+        }
     }
 
     private SearchResponse parseResponse(ProcessResponseResponse response, SearchResponse originalResponse) throws IOException {
