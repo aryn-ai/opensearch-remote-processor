@@ -84,7 +84,7 @@ message SearchHit {
     repeated string matched_queries = 13;
     SearchShardTarget shard = 14;
     string index = 15; 
-    string clusterAlias = 16;
+    optional string clusterAlias = 16;
     map<string, bytes> source_as_map = 17;
 }
 
