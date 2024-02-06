@@ -35,7 +35,6 @@ import io.grpc.ChannelCredentials;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
 import org.opensearch.grpc.ProcessResponseRequest;
@@ -56,8 +55,7 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
         this.endpoint = endpoint;
         this.processorName = processorName;
         ChannelCredentials creds = InsecureChannelCredentials.create();
-        ManagedChannelBuilder b = Grpc.newChannelBuilder(this.endpoint, creds);
-        ManagedChannel chan = b.build();
+        ManagedChannel chan = Grpc.newChannelBuilder(this.endpoint, creds).build();
         this.rpsRpcClient = RemoteProcessorServiceGrpc.newStub(chan);
     }
 
