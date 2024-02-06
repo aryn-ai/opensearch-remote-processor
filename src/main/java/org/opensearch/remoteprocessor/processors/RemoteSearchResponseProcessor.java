@@ -36,6 +36,7 @@ import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
+import lombok.Getter;
 
 import org.opensearch.grpc.ProcessResponseRequest;
 import org.opensearch.grpc.ProcessResponseResponse;
@@ -69,20 +70,20 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
         throw new UnsupportedOperationException("Use processResponseAsync instead since this processor makes network calls");
     }
 
-    @Override 
+    @Override
     public void processResponseAsync(SearchRequest request, SearchResponse response, PipelineProcessingContext ctx, ActionListener<SearchResponse> listener) {
         try {
-        // Serialize the request, response, context, and then send it to enpoint.
-        // Wait for response, deserialize it, and return it.
+            // Serialize the request, response, context, and then send it to endpoint.
+            // Wait for response, deserialize it, and return it.
             ProcessResponseRequest grpcRequest = buildRequest(request, response, ctx);
             System.out.println(grpcRequest.toString());
             sendRequest(grpcRequest, ActionListener.wrap(
-                grpcResponse -> {
-                    listener.onResponse(parseResponse(grpcResponse, response));
-                },
-                e -> {
-                    listener.onFailure(e);
-                }
+                    grpcResponse -> {
+                        listener.onResponse(parseResponse(grpcResponse, response));
+                    },
+                    e -> {
+                        listener.onFailure(e);
+                    }
             ));
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -93,10 +94,10 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
 
     private ProcessResponseRequest buildRequest(SearchRequest request, SearchResponse response, PipelineProcessingContext ctx) throws IOException {
         return ProcessResponseRequest.newBuilder()
-            .setSearchRequest(ProtoTranslationUtils.SearchRequestOsToPb(request))
-            .setSearchResponse(ProtoTranslationUtils.SearchResponseOsToPb(response))
-            .setProcessorName(this.processorName)
-            .build();
+                .setSearchRequest(ProtoTranslationUtils.SearchRequestOsToPb(request))
+                .setSearchResponse(ProtoTranslationUtils.SearchResponseOsToPb(response))
+                .setProcessorName(this.processorName)
+                .build();
     }
 
     private void sendRequest(ProcessResponseRequest request, ActionListener<ProcessResponseResponse> listener) {
@@ -131,6 +132,14 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
         return ProtoTranslationUtils.SearchResponsePbToOs(response.getSearchResponse(), originalResponse);
     }
 
+    public String getEndpoint() {
+        return this.endpoint;
+    }
+
+    public String getProcessorName() {
+        return this.processorName;
+    }
+
     public static class Factory implements Processor.Factory<SearchResponseProcessor> {
 
         @Override
@@ -138,23 +147,22 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
                 Map<String, org.opensearch.search.pipeline.Processor.Factory<SearchResponseProcessor>> processorFactories,
                 String tag, String description, boolean ignoreFailure, Map<String, Object> config,
                 PipelineContext pipelineContext) throws Exception {
-            Object endpointObj = config.remove(ENDPOINT_FIELD);
-            if(endpointObj == null) {
-                throw new IllegalArgumentException(String.format(Locale.ROOT, "Missing field %s", ENDPOINT_FIELD));
+            String endpoint = getConfigParamAsString(config, ENDPOINT_FIELD);
+            String processorName = getConfigParamAsString(config, PROCESSOR_NAME_FIELD);
+            return new RemoteSearchResponseProcessor(tag, description, ignoreFailure, endpoint, processorName);
+        }
+
+        private static String getConfigParamAsString(Map<String, Object> config, String key) throws IllegalArgumentException {
+            Object obj = config.remove(key);
+            if (obj == null) {
+                throw new IllegalArgumentException(String.format(Locale.ROOT, "Missing field %s", key));
             }
-            if(! (endpointObj instanceof String)) {
-                throw new IllegalArgumentException(String.format(Locale.ROOT, "%s must be of type string", ENDPOINT_FIELD));
+            if (!(obj instanceof String)) {
+                throw new IllegalArgumentException(String.format(Locale.ROOT, "%s must be of type string", key));
             }
-            Object processorNameObj = config.remove(PROCESSOR_NAME_FIELD);
-            if(processorNameObj == null) {
-                throw new IllegalArgumentException(String.format(Locale.ROOT, "Missing field %s", PROCESSOR_NAME_FIELD));
-            }
-            if(! (processorNameObj instanceof String)) {
-                throw new IllegalArgumentException(String.format(Locale.ROOT, "%s must be of type string", PROCESSOR_NAME_FIELD));
-            }
-            return new RemoteSearchResponseProcessor(tag, description, ignoreFailure, (String) endpointObj, (String) processorNameObj);
+            return (String) obj;
         }
 
     }
-    
+
 }
