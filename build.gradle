@@ -21,9 +21,10 @@ buildscript {
 }
 
 plugins {
+    id 'java'
     id 'idea'
     id 'com.google.protobuf' version '0.9.4'
-    id 'io.freefair.lombok' version '8.4'
+    id "io.freefair.lombok" version '8.4'
 }
 
 apply plugin: 'opensearch.opensearchplugin'
@@ -42,6 +43,10 @@ opensearchplugin {
     classname "${projectPath}.${pathToPlugin}.${pluginClassName}"
     licenseFile rootProject.file('LICENSE.txt')
     noticeFile rootProject.file('NOTICE.txt')
+}
+
+lombok {
+    version = "1.18.30"
 }
 
 publishing {
@@ -78,6 +83,11 @@ dependencies {
     implementation 'io.perfmark:perfmark-api:0.27.0'
     implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'com.google.code.gson:gson:2.10.1'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	
+	testCompileOnly 'org.projectlombok:lombok:1.18.30'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
 protobuf {

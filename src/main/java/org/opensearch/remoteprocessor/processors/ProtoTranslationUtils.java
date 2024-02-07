@@ -1,3 +1,20 @@
+/*
+ * Copyright 2024 Aryn
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.opensearch.remoteprocessor.processors;
 
 import java.io.ByteArrayOutputStream;
@@ -363,7 +380,6 @@ public class ProtoTranslationUtils {
 
     public static org.opensearch.action.search.SearchResponse SearchResponsePbToOs(org.opensearch.pb.action.search.SearchResponse response, org.opensearch.action.search.SearchResponse originalResponse) throws IOException {
 
-        System.out.println("Parse suggest");
         org.opensearch.search.suggest.Suggest newSuggest;
         if(response.getInternalResponse().getSuggest().getSuggestions().isEmpty()) {
             newSuggest = null;
@@ -372,7 +388,6 @@ public class ProtoTranslationUtils {
             newSuggest = org.opensearch.search.suggest.Suggest.fromXContent(suggestParser);
         }
 
-        System.out.println("Parse aggs");
         org.opensearch.search.aggregations.Aggregations newAggs;
         if(response.getInternalResponse().getAggregations().getAggregations().isEmpty()) {
             newAggs = null;
@@ -381,7 +396,6 @@ public class ProtoTranslationUtils {
             newAggs = org.opensearch.search.aggregations.Aggregations.fromXContent(aggsParser);
         }
 
-        System.out.println("parse hits");
         ArrayList<org.opensearch.search.SearchHit> newHits = new ArrayList<>();
         for(SearchHit hit : response.getInternalResponse().getHits().getHitsList()) {
             org.opensearch.search.SearchHit ogHit = findHitWithId(originalResponse, hit.getDocId());
@@ -389,7 +403,6 @@ public class ProtoTranslationUtils {
         }
         org.opensearch.search.SearchHit[] hitBuf = new org.opensearch.search.SearchHit[newHits.size()];
 
-        System.out.println("Parse the rest");
         return new SearchResponse(
             new org.opensearch.action.search.SearchResponseSections(
                 new org.opensearch.search.SearchHits(
