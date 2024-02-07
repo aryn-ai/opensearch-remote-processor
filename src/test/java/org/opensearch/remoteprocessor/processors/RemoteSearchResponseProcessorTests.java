@@ -123,4 +123,6 @@ public class RemoteSearchResponseProcessorTests extends OpenSearchTestCase {
         );
     }
 
+    // Unfortunately it seems like the only way to test the grpc stuff is via integ tests. So that'll happen there.
+
 }

@@ -380,7 +380,6 @@ public class ProtoTranslationUtils {
 
     public static org.opensearch.action.search.SearchResponse SearchResponsePbToOs(org.opensearch.pb.action.search.SearchResponse response, org.opensearch.action.search.SearchResponse originalResponse) throws IOException {
 
-        System.out.println("Parse suggest");
         org.opensearch.search.suggest.Suggest newSuggest;
         if(response.getInternalResponse().getSuggest().getSuggestions().isEmpty()) {
             newSuggest = null;
@@ -389,7 +388,6 @@ public class ProtoTranslationUtils {
             newSuggest = org.opensearch.search.suggest.Suggest.fromXContent(suggestParser);
         }
 
-        System.out.println("Parse aggs");
         org.opensearch.search.aggregations.Aggregations newAggs;
         if(response.getInternalResponse().getAggregations().getAggregations().isEmpty()) {
             newAggs = null;
@@ -398,7 +396,6 @@ public class ProtoTranslationUtils {
             newAggs = org.opensearch.search.aggregations.Aggregations.fromXContent(aggsParser);
         }
 
-        System.out.println("parse hits");
         ArrayList<org.opensearch.search.SearchHit> newHits = new ArrayList<>();
         for(SearchHit hit : response.getInternalResponse().getHits().getHitsList()) {
             org.opensearch.search.SearchHit ogHit = findHitWithId(originalResponse, hit.getDocId());
@@ -406,7 +403,6 @@ public class ProtoTranslationUtils {
         }
         org.opensearch.search.SearchHit[] hitBuf = new org.opensearch.search.SearchHit[newHits.size()];
 
-        System.out.println("Parse the rest");
         return new SearchResponse(
             new org.opensearch.action.search.SearchResponseSections(
                 new org.opensearch.search.SearchHits(
