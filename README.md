@@ -8,7 +8,7 @@ This plugin adds a remote search processor that calls out to the sycamore search
 This part should be fairly simple. I think gradle handles all of the code-gen, so all that should be needed is to checkout 2.x and get the proto files
 ```
 git switch 2.x
-git submodule update --remote
+git submodule update --init --remote
 ```
 and then build a zip with
 ```
