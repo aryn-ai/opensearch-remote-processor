@@ -124,6 +124,7 @@ thirdPartyAudit.enabled = false
 forbiddenApisMain.enabled = false
 // No need to validate pom, as we do not upload to maven/sonatype
 validateNebulaPom.enabled = false
+javadoc.enabled = false
 
 
 
@@ -144,6 +145,9 @@ task integTest(type: RestIntegTestTask) {
     classpath = sourceSets.test.runtimeClasspath
 }
 tasks.named("check").configure { dependsOn(integTest) }
+
+tasks.named("compileJava").configure { dependsOn(generateProto) }
+tasks.named("compileTestJava").configure { dependsOn(generateProto) }
 
 integTest {
     // The --debug-jvm command-line option makes the cluster debuggable; this makes the tests debuggable
