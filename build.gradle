@@ -113,6 +113,10 @@ sourceSets {
             // can skip that one (in fact, must)
             srcDir 'protocols/remote-processor'
         }
+        java {
+            srcDir 'build/generated/source/main/java'
+            srcDir 'build/generated/source/grpc'
+        }
     }
 }
 
