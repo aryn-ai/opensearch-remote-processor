@@ -29,7 +29,8 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
         distribution: temurin
-
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
     - name: Build and Run Tests
       run: |
           ./gradlew build
