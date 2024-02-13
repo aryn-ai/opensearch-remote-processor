@@ -113,10 +113,6 @@ sourceSets {
             // can skip that one (in fact, must)
             srcDir 'protocols/remote-processor'
         }
-        java {
-            srcDir 'build/generated/source/main/java'
-            srcDir 'build/generated/source/grpc'
-        }
     }
 }
 
@@ -149,9 +145,6 @@ task integTest(type: RestIntegTestTask) {
     classpath = sourceSets.test.runtimeClasspath
 }
 tasks.named("check").configure { dependsOn(integTest) }
-
-tasks.named("compileJava").configure { dependsOn(generateProto) }
-tasks.named("compileTestJava").configure { dependsOn(generateProto) }
 
 integTest {
     // The --debug-jvm command-line option makes the cluster debuggable; this makes the tests debuggable
