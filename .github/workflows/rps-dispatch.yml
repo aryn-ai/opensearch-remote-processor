@@ -20,3 +20,4 @@ jobs:
           token: ${{ secrets.SUBMODULE_ACCESS }}
           repository: aryn-ai/remote-processor-service
           event-type: plugin-update
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
