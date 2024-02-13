@@ -1,9 +1,6 @@
 name: Run Parent Project (RPS) Integration Tests
 
 on:
-  push:
-    branches:
-      - "2.x"
   pull_request:
     branches:
       - "2.x"
@@ -20,4 +17,4 @@ jobs:
           token: ${{ secrets.SUBMODULE_ACCESS }}
           repository: aryn-ai/remote-processor-service
           event-type: plugin-update
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+          client-payload: '{"ref": "${{ github.head_ref }}", "sha": "${{ github.event.pull_request.head.sha }}"}'
