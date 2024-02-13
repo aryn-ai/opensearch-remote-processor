@@ -1,4 +1,4 @@
-name: Build and Test Plugin Template
+name: Build and Test Remote Processor Plugin
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
         java:
           - 17
           - 21
-    name: Build and Test Plugin Template
+    name: Build and Test Remote Processor Plugin
     runs-on: ${{ matrix.os }}
 
     steps:
