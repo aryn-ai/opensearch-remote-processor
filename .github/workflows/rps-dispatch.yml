@@ -1,0 +1,20 @@
+name: Run Parent Project (RPS) Integration Tests
+
+on:
+  pull_request:
+    branches:
+      - "2.x"
+
+jobs:
+  dispatch-rps:
+    name: Run RPS Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.SUBMODULE_ACCESS }}
+          repository: aryn-ai/remote-processor-service
+          event-type: plugin-update
+          client-payload: '{"ref": "${{ github.head_ref }}", "sha": "${{ github.event.pull_request.head.sha }}"}'

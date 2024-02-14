@@ -22,8 +22,10 @@ import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
+import org.opensearch.client.RestClient;
 import org.opensearch.plugins.Plugin;
 import org.opensearch.test.OpenSearchIntegTestCase;
+import org.opensearch.test.rest.OpenSearchRestTestCase;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -34,18 +36,15 @@ import static org.hamcrest.Matchers.containsString;
 
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 @OpenSearchIntegTestCase.ClusterScope(scope = OpenSearchIntegTestCase.Scope.SUITE)
-public class RemoteProcessorPluginIT extends OpenSearchIntegTestCase {
-
-    @Override
-    protected Collection<Class<? extends Plugin>> nodePlugins() {
-        return Collections.singletonList(RemoteProcessorPlugin.class);
-    }
+public class RemoteProcessorPluginIT extends OpenSearchRestTestCase {
 
     public void testPluginInstalled() throws IOException, ParseException {
-        Response response = createRestClient().performRequest(new Request("GET", "/_cat/plugins"));
-        String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        try(RestClient client = client()) {
+            Response response = client.performRequest(new Request("GET", "/_cat/plugins"));
+            String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-        logger.info("response body: {}", body);
-        org.hamcrest.MatcherAssert.assertThat("did not contain plugin", body, containsString("remote-processor"));
+            logger.info("response body: {}", body);
+            org.hamcrest.MatcherAssert.assertThat("did not contain plugin", body, containsString("remote-processor"));
+        }
     }
 }
