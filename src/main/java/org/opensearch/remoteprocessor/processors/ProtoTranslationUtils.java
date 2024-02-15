@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -291,7 +292,7 @@ public class ProtoTranslationUtils {
             .setVersion(hit.getVersion())
             .setSeqNo(hit.getSeqNo())
             .setPrimaryTerm(hit.getPrimaryTerm())
-            .setSource(ByteString.copyFrom(hit.getSourceRef().toBytesRef().bytes))
+            .setSource(ByteString.copyFrom(hit.getSourceAsString(), Charset.defaultCharset()))
             .putAllDocumentFields(newDocFields)
             .putAllMetaFields(newMetaFields)
             .putAllHighlightFields(newHighlightFields)
