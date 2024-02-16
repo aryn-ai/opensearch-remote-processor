@@ -111,7 +111,7 @@ sourceSets {
         proto {
             // set this to proto files directory. src/main/proto is included by default so
             // can skip that one (in fact, must)
-            srcDir 'protocols/remote-processor'
+            srcDir 'protocols/'
         }
     }
 }
