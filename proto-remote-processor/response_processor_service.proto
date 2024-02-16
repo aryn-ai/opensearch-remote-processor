@@ -3,8 +3,8 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "org.opensearch.grpc";
 
-import "search_request.proto";
-import "search_response.proto";
+import "proto-remote-processor/search_request.proto";
+import "proto-remote-processor/search_response.proto";
 
 service RemoteProcessorService {
 	// Processes a search response
