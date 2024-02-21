@@ -52,6 +52,7 @@ import org.opensearch.pb.action.search.SearchExtBuilder;
 import org.opensearch.pb.action.search.SearchHit;
 import org.opensearch.pb.action.search.SearchHits;
 import org.opensearch.pb.action.search.SearchRequest;
+import org.opensearch.pb.action.search.SearchRequest.SearchType;
 import org.opensearch.pb.action.search.SearchResponseSections;
 import org.opensearch.pb.action.search.SearchShardFailure;
 import org.opensearch.pb.action.search.SearchShardTarget;
@@ -59,50 +60,49 @@ import org.opensearch.pb.action.search.SearchSortValues;
 import org.opensearch.pb.action.search.SearchSource;
 import org.opensearch.pb.action.search.Suggest;
 import org.opensearch.pb.action.search.TotalHits;
-import org.opensearch.pb.action.search.SearchRequest.SearchType;
 import org.opensearch.search.profile.SearchProfileShardResults;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 
 public class ProtoTranslationUtils {
-    
-    public static org.opensearch.pb.action.search.SearchRequest SearchRequestOsToPb(org.opensearch.action.search.SearchRequest request) throws IOException {
 
-        SearchRequest.Builder b = org.opensearch.pb.action.search.SearchRequest.newBuilder()
+    public static org.opensearch.pb.action.search.SearchRequest SearchRequestOsToPb(org.opensearch.action.search.SearchRequest request)
+        throws IOException {
+
+        SearchRequest.Builder b = org.opensearch.pb.action.search.SearchRequest
+            .newBuilder()
             .addAllIndices(Arrays.asList(request.indices()))
             .setBatchedReduceSize(request.getBatchedReduceSize())
             .setCcsMinimizeRoundTrips(request.isCcsMinimizeRoundtrips())
             .setIndicesOptions(
-                IndicesOptions.newBuilder()
-                .setAllowNoIndices(request.indicesOptions().allowNoIndices())
-                .setForbidAliasesToMultipleIndices(!request.indicesOptions().allowAliasesToMultipleIndices())
-                .setForbidClosedIndices(request.indicesOptions().forbidClosedIndices())
-                .setIgnoreAliases(request.indicesOptions().forbidClosedIndices())
-                .setIgnoreThrottled(request.indicesOptions().ignoreThrottled())
-                .setIgnoreUnavailable(request.indicesOptions().ignoreUnavailable())
-                .setWildcardStatesClosed(request.indicesOptions().expandWildcardsClosed())
-                .setWildcardStatesHidden(request.indicesOptions().expandWildcardsHidden())
-                .setWildcardStatesOpen(request.indicesOptions().expandWildcardsOpen())
-                .build())
+                IndicesOptions
+                    .newBuilder()
+                    .setAllowNoIndices(request.indicesOptions().allowNoIndices())
+                    .setForbidAliasesToMultipleIndices(!request.indicesOptions().allowAliasesToMultipleIndices())
+                    .setForbidClosedIndices(request.indicesOptions().forbidClosedIndices())
+                    .setIgnoreAliases(request.indicesOptions().forbidClosedIndices())
+                    .setIgnoreThrottled(request.indicesOptions().ignoreThrottled())
+                    .setIgnoreUnavailable(request.indicesOptions().ignoreUnavailable())
+                    .setWildcardStatesClosed(request.indicesOptions().expandWildcardsClosed())
+                    .setWildcardStatesHidden(request.indicesOptions().expandWildcardsHidden())
+                    .setWildcardStatesOpen(request.indicesOptions().expandWildcardsOpen())
+                    .build()
+            )
             .setMaxConcurrentShardRequests(request.getMaxConcurrentShardRequests())
             .setRequestCache(Boolean.TRUE.equals(request.requestCache()))
             .setSearchType(
-                request.searchType() == org.opensearch.action.search.SearchType.QUERY_THEN_FETCH ? 
-                    SearchType.QUERY_THEN_FETCH : SearchType.DFS_QUERY_THEN_FETCH)
-            .setSource(
-                SearchSource.newBuilder()
-                .setSourceBytes(toCbor(request.source()))
-                .build());
-        //Optional fields
+                request.searchType() == org.opensearch.action.search.SearchType.QUERY_THEN_FETCH
+                    ? SearchType.QUERY_THEN_FETCH
+                    : SearchType.DFS_QUERY_THEN_FETCH
+            )
+            .setSource(SearchSource.newBuilder().setSourceBytes(toCbor(request.source())).build());
+        // Optional fields
         if (request.getCancelAfterTimeInterval() != null) {
             b.setCancelAfterMillis(request.getCancelAfterTimeInterval().millis());
         }
         if (request.scroll() != null) {
-            b.setScroll(
-                Scroll.newBuilder()
-                .setKeepAliveMillis(request.scroll().keepAlive().millis())
-                .build());
+            b.setScroll(Scroll.newBuilder().setKeepAliveMillis(request.scroll().keepAlive().millis()).build());
         }
         if (request.isPhaseTook() != null) {
             b.setPhaseTook(request.isPhaseTook());
@@ -120,11 +120,11 @@ public class ProtoTranslationUtils {
             b.setPreference(request.preference());
         }
 
-
         return b.build();
     }
 
-    public static org.opensearch.pb.action.search.SearchResponse SearchResponseOsToPb(org.opensearch.action.search.SearchResponse response) throws IOException {
+    public static org.opensearch.pb.action.search.SearchResponse SearchResponseOsToPb(org.opensearch.action.search.SearchResponse response)
+        throws IOException {
 
         List<SearchExtBuilder> newExts = new ArrayList<>(response.getInternalResponse().getSearchExtBuilders().size());
         for (org.opensearch.search.SearchExtBuilder seb : response.getInternalResponse().getSearchExtBuilders()) {
@@ -132,7 +132,7 @@ public class ProtoTranslationUtils {
         }
 
         Map<String, Long> phaseTookMap;
-        if(response.getPhaseTook() != null) {
+        if (response.getPhaseTook() != null) {
             PipedOutputStream os = new PipedOutputStream();
             PipedInputStream is = new PipedInputStream(os);
             OutputStreamStreamOutput osso = new OutputStreamStreamOutput(os);
@@ -144,86 +144,98 @@ public class ProtoTranslationUtils {
             phaseTookMap = new HashMap<>();
         }
 
-        SearchHits.Builder shb = SearchHits.newBuilder()
+        SearchHits.Builder shb = SearchHits
+            .newBuilder()
             .setMaxScore(response.getHits().getMaxScore())
             .setTotalHits(
-                TotalHits.newBuilder()
-                .setValue(response.getHits().getTotalHits().value)
-                .setRelation(
-                    response.getHits().getTotalHits().relation == org.apache.lucene.search.TotalHits.Relation.EQUAL_TO ?
-                    TotalHits.Relation.EQUAL_TO : TotalHits.Relation.GREATER_THAN_OR_EQUAL_TO
-                ))
+                TotalHits
+                    .newBuilder()
+                    .setValue(response.getHits().getTotalHits().value)
+                    .setRelation(
+                        response.getHits().getTotalHits().relation == org.apache.lucene.search.TotalHits.Relation.EQUAL_TO
+                            ? TotalHits.Relation.EQUAL_TO
+                            : TotalHits.Relation.GREATER_THAN_OR_EQUAL_TO
+                    )
+            )
             .addAllHits(
-                Arrays.asList(response.getHits().getHits()).stream()
-                .map(ProtoTranslationUtils::translateHitToPb)
-                .collect(Collectors.toList()));
-        if(response.getHits().getCollapseField() != null) {
-            shb.setCollapseField(response.getHits().getCollapseField());
-        }
-        if(response.getHits().getCollapseValues() != null) {
-            shb.addAllCollapseValues(
-                Arrays.asList(response.getHits().getCollapseValues())
+                Arrays
+                    .asList(response.getHits().getHits())
                     .stream()
-                    .map(ProtoTranslationUtils::javaToBytes)
+                    .map(ProtoTranslationUtils::translateHitToPb)
                     .collect(Collectors.toList())
             );
+        if (response.getHits().getCollapseField() != null) {
+            shb.setCollapseField(response.getHits().getCollapseField());
+        }
+        if (response.getHits().getCollapseValues() != null) {
+            shb
+                .addAllCollapseValues(
+                    Arrays
+                        .asList(response.getHits().getCollapseValues())
+                        .stream()
+                        .map(ProtoTranslationUtils::javaToBytes)
+                        .collect(Collectors.toList())
+                );
         }
 
-        SearchResponseSections.Builder srsb = SearchResponseSections.newBuilder()
+        SearchResponseSections.Builder srsb = SearchResponseSections
+            .newBuilder()
             .setHits(shb.build())
             .setTimedOut(Boolean.TRUE.equals(response.isTimedOut()))
             .setTerminatedEarly(Boolean.TRUE.equals(response.isTerminatedEarly()))
             .setNumReducePhases(response.getNumReducePhases())
             .addAllSearchExts(newExts);
         // Optional fields
-        if(response.getAggregations() != null) {
-            srsb.setAggregations(
-                Aggregations.newBuilder()
-                .setAggregations(toCbor(response.getAggregations()))
-                .build()
-            );
+        if (response.getAggregations() != null) {
+            srsb.setAggregations(Aggregations.newBuilder().setAggregations(toCbor(response.getAggregations())).build());
         }
-        if(response.getSuggest() != null) {
-            srsb.setSuggest(
-                Suggest.newBuilder()
-                .setSuggestions(toCbor(response.getSuggest()))
-                .build()
-            );
-        }  
+        if (response.getSuggest() != null) {
+            srsb.setSuggest(Suggest.newBuilder().setSuggestions(toCbor(response.getSuggest())).build());
+        }
 
-        org.opensearch.pb.action.search.SearchResponse.Builder srb = org.opensearch.pb.action.search.SearchResponse.newBuilder()
+        org.opensearch.pb.action.search.SearchResponse.Builder srb = org.opensearch.pb.action.search.SearchResponse
+            .newBuilder()
             .setClusters(
-                response.getClusters() == null ? null :
-                Clusters.newBuilder()
-                .setSkipped(response.getClusters().getSkipped())
-                .setSuccessful(response.getClusters().getSuccessful())
-                .setTotal(response.getClusters().getTotal())
-                .build())
+                response.getClusters() == null
+                    ? null
+                    : Clusters
+                        .newBuilder()
+                        .setSkipped(response.getClusters().getSkipped())
+                        .setSuccessful(response.getClusters().getSuccessful())
+                        .setTotal(response.getClusters().getTotal())
+                        .build()
+            )
             .setInternalResponse(srsb.build())
             .setTotalShards(response.getTotalShards())
             .setSuccessfulShards(response.getSuccessfulShards())
             .setSkippedShards(response.getSkippedShards())
             .addAllShardFailures(
-                Arrays.asList(response.getShardFailures())
-                .stream()
-                .map(ssf -> 
-                    SearchShardFailure.newBuilder()
-                    .setReason(ssf.reason())
-                    .setTarget(
-                        SearchShardTarget.newBuilder()
-                        .setIndexId(ssf.index())
-                        .setNodeId(ssf.shard().getNodeId())
-                        .setShardId(ssf.shard().toString())
-                        .build())
-                    .build())
-                .collect(Collectors.toList()))
+                Arrays
+                    .asList(response.getShardFailures())
+                    .stream()
+                    .map(
+                        ssf -> SearchShardFailure
+                            .newBuilder()
+                            .setReason(ssf.reason())
+                            .setTarget(
+                                SearchShardTarget
+                                    .newBuilder()
+                                    .setIndexId(ssf.index())
+                                    .setNodeId(ssf.shard().getNodeId())
+                                    .setShardId(ssf.shard().toString())
+                                    .build()
+                            )
+                            .build()
+                    )
+                    .collect(Collectors.toList())
+            )
             .setTookInMillis(response.getTook() == null ? null : response.getTook().millis())
             .setPhaseTook(PhaseTook.newBuilder().putAllPhaseTookMap(phaseTookMap).build());
-        
-        if(response.getScrollId() != null) {
+
+        if (response.getScrollId() != null) {
             srb.setScrollId(response.getScrollId());
         }
-        if(response.pointInTimeId() != null) {
+        if (response.pointInTimeId() != null) {
             srb.setPointInTimeId(response.pointInTimeId());
         }
 
@@ -246,46 +258,61 @@ public class ProtoTranslationUtils {
     private static SearchHit translateHitToPb(org.opensearch.search.SearchHit hit) {
         HashMap<String, DocumentField> newDocFields = new HashMap<>();
         HashMap<String, DocumentField> newMetaFields = new HashMap<>();
-        for (String key: hit.getFields().keySet()) {
+        for (String key : hit.getFields().keySet()) {
             org.opensearch.common.document.DocumentField df = hit.removeDocumentField(key);
-            if(df == null) {
-                newMetaFields.put(key, 
-                    DocumentField.newBuilder()
-                    .setName(hit.field(key).getName())
-                    .addAllValues(
-                        Arrays.asList(hit.field(key).getValues())
-                        .stream()
-                        .map(ProtoTranslationUtils::javaToBytes)
-                        .collect(Collectors.toList()))
-                    .build());
+            if (df == null) {
+                newMetaFields
+                    .put(
+                        key,
+                        DocumentField
+                            .newBuilder()
+                            .setName(hit.field(key).getName())
+                            .addAllValues(
+                                Arrays
+                                    .asList(hit.field(key).getValues())
+                                    .stream()
+                                    .map(ProtoTranslationUtils::javaToBytes)
+                                    .collect(Collectors.toList())
+                            )
+                            .build()
+                    );
             } else {
                 hit.setDocumentField(key, df);
-                newDocFields.put(key, 
-                    DocumentField.newBuilder()
-                    .setName(df.getName())
-                    .addAllValues(
-                        Arrays.asList(df.getValues())
-                        .stream()
-                        .map(ProtoTranslationUtils::javaToBytes)
-                        .collect(Collectors.toList()))
-                    .build());
+                newDocFields
+                    .put(
+                        key,
+                        DocumentField
+                            .newBuilder()
+                            .setName(df.getName())
+                            .addAllValues(
+                                Arrays.asList(df.getValues()).stream().map(ProtoTranslationUtils::javaToBytes).collect(Collectors.toList())
+                            )
+                            .build()
+                    );
             }
         }
 
         HashMap<String, HighlightField> newHighlightFields = new HashMap<>();
-        for (String key: hit.getHighlightFields().keySet()) {
-            newHighlightFields.put(key, 
-                HighlightField.newBuilder()
-                .setName(hit.getFields().get(key).getName())
-                .addAllFragments(
-                    Arrays.asList(hit.getHighlightFields().get(key).getFragments())
-                    .stream()
-                    .map(frag -> frag.string())
-                    .collect(Collectors.toList()))
-                .build());
+        for (String key : hit.getHighlightFields().keySet()) {
+            newHighlightFields
+                .put(
+                    key,
+                    HighlightField
+                        .newBuilder()
+                        .setName(hit.getFields().get(key).getName())
+                        .addAllFragments(
+                            Arrays
+                                .asList(hit.getHighlightFields().get(key).getFragments())
+                                .stream()
+                                .map(frag -> frag.string())
+                                .collect(Collectors.toList())
+                        )
+                        .build()
+                );
         }
 
-        SearchHit.Builder shb =  SearchHit.newBuilder()
+        SearchHit.Builder shb = SearchHit
+            .newBuilder()
             .setDocId(hit.docId())
             .setScore(hit.getScore())
             .setId(hit.getId())
@@ -297,42 +324,47 @@ public class ProtoTranslationUtils {
             .putAllMetaFields(newMetaFields)
             .putAllHighlightFields(newHighlightFields)
             .setSortValues(
-                SearchSortValues.newBuilder()
-                .addAllFormattedSortValues(
-                    Arrays.asList(hit.getSortValues())
-                    .stream().map(ProtoTranslationUtils::javaToBytes)
-                    .collect(Collectors.toList()))
-                .addAllRawSortValues(
-                    Arrays.asList(hit.getRawSortValues())
-                    .stream().map(ProtoTranslationUtils::javaToBytes)
-                    .collect(Collectors.toList()))
-                .build())
+                SearchSortValues
+                    .newBuilder()
+                    .addAllFormattedSortValues(
+                        Arrays.asList(hit.getSortValues()).stream().map(ProtoTranslationUtils::javaToBytes).collect(Collectors.toList())
+                    )
+                    .addAllRawSortValues(
+                        Arrays.asList(hit.getRawSortValues()).stream().map(ProtoTranslationUtils::javaToBytes).collect(Collectors.toList())
+                    )
+                    .build()
+            )
             .addAllMatchedQueries(Arrays.asList(hit.getMatchedQueries()))
             .setShard(
-                SearchShardTarget.newBuilder()
-                .setIndexId(hit.getShard().getIndex())
-                .setNodeId(hit.getShard().getNodeId())
-                .setShardId(hit.getShard().getShardId().toString())
-                .build())
+                SearchShardTarget
+                    .newBuilder()
+                    .setIndexId(hit.getShard().getIndex())
+                    .setNodeId(hit.getShard().getNodeId())
+                    .setShardId(hit.getShard().getShardId().toString())
+                    .build()
+            )
             .setIndex(hit.getIndex());
 
-        if(hit.getNestedIdentity() != null) {
-            shb.setNestedId(
-                NestedIdentity.newBuilder()
-                .setField(hit.getNestedIdentity().getField().string())
-                .setOffset(hit.getNestedIdentity().getOffset())
-                .build());
+        if (hit.getNestedIdentity() != null) {
+            shb
+                .setNestedId(
+                    NestedIdentity
+                        .newBuilder()
+                        .setField(hit.getNestedIdentity().getField().string())
+                        .setOffset(hit.getNestedIdentity().getOffset())
+                        .build()
+                );
         }
-        if(hit.getClusterAlias() != null) {
+        if (hit.getClusterAlias() != null) {
             shb.setClusterAlias(hit.getClusterAlias());
         }
-        
+
         return shb.build();
     }
 
     private static org.opensearch.search.SearchHit findHitWithId(org.opensearch.action.search.SearchResponse ogResponse, int docId) {
-        for(org.opensearch.search.SearchHit h : ogResponse.getHits()) {
-            if(h.docId() == docId) {
+        for (org.opensearch.search.SearchHit h : ogResponse.getHits()) {
+            if (h.docId() == docId) {
                 return h;
             }
         }
@@ -342,23 +374,25 @@ public class ProtoTranslationUtils {
     private static org.opensearch.search.SearchHit TranslateHitToOs(SearchHit hit, org.opensearch.search.SearchHit ogHit) {
         Map<String, org.opensearch.common.document.DocumentField> docFieldMap = new HashMap<>();
         Map<String, org.opensearch.common.document.DocumentField> metaFieldMap = new HashMap<>();
-        for(String key: hit.getDocumentFieldsMap().keySet()) {
+        for (String key : hit.getDocumentFieldsMap().keySet()) {
             docFieldMap.put(key, ogHit.field(key));
         }
-        for(String key: hit.getMetaFieldsMap().keySet()) {
+        for (String key : hit.getMetaFieldsMap().keySet()) {
             metaFieldMap.put(key, ogHit.field(key));
         }
 
         Map<String, org.opensearch.search.fetch.subphase.highlight.HighlightField> highlightFieldMap = new HashMap<>();
-        for(String key: hit.getHighlightFieldsMap().keySet()) {
+        for (String key : hit.getHighlightFieldsMap().keySet()) {
             String[] fragStrings = new String[hit.getHighlightFieldsMap().get(key).getFragmentsCount()];
             hit.getHighlightFieldsMap().get(key).getFragmentsList().toArray(fragStrings);
-            highlightFieldMap.put( key, 
-                new org.opensearch.search.fetch.subphase.highlight.HighlightField(
-                    hit.getHighlightFieldsMap().get(key).getName(),
-                    Text.convertFromStringArray(fragStrings)
-                )
-            );
+            highlightFieldMap
+                .put(
+                    key,
+                    new org.opensearch.search.fetch.subphase.highlight.HighlightField(
+                        hit.getHighlightFieldsMap().get(key).getName(),
+                        Text.convertFromStringArray(fragStrings)
+                    )
+                );
         }
 
         org.opensearch.search.SearchHit newHit = new org.opensearch.search.SearchHit(
@@ -375,30 +409,37 @@ public class ProtoTranslationUtils {
         newHit.highlightFields(highlightFieldMap);
         newHit.matchedQueries(hit.getMatchedQueriesList().toArray(new String[hit.getMatchedQueriesCount()]));
         newHit.shard(ogHit.getShard());
-        
+
         return newHit;
     }
 
-    public static org.opensearch.action.search.SearchResponse SearchResponsePbToOs(org.opensearch.pb.action.search.SearchResponse response, org.opensearch.action.search.SearchResponse originalResponse) throws IOException {
+    public static org.opensearch.action.search.SearchResponse SearchResponsePbToOs(
+        org.opensearch.pb.action.search.SearchResponse response,
+        org.opensearch.action.search.SearchResponse originalResponse
+    ) throws IOException {
 
         org.opensearch.search.suggest.Suggest newSuggest;
-        if(response.getInternalResponse().getSuggest().getSuggestions().isEmpty()) {
+        if (response.getInternalResponse().getSuggest().getSuggestions().isEmpty()) {
             newSuggest = null;
         } else {
-            XContentParser suggestParser = XContentType.CBOR.xContent().createParser(null, null, response.getInternalResponse().getSuggest().getSuggestions().toByteArray());
+            XContentParser suggestParser = XContentType.CBOR
+                .xContent()
+                .createParser(null, null, response.getInternalResponse().getSuggest().getSuggestions().toByteArray());
             newSuggest = org.opensearch.search.suggest.Suggest.fromXContent(suggestParser);
         }
 
         org.opensearch.search.aggregations.Aggregations newAggs;
-        if(response.getInternalResponse().getAggregations().getAggregations().isEmpty()) {
+        if (response.getInternalResponse().getAggregations().getAggregations().isEmpty()) {
             newAggs = null;
         } else {
-            XContentParser aggsParser = XContentType.CBOR.xContent().createParser(null, null, response.getInternalResponse().getAggregations().getAggregations().toByteArray());
+            XContentParser aggsParser = XContentType.CBOR
+                .xContent()
+                .createParser(null, null, response.getInternalResponse().getAggregations().getAggregations().toByteArray());
             newAggs = org.opensearch.search.aggregations.Aggregations.fromXContent(aggsParser);
         }
 
         ArrayList<org.opensearch.search.SearchHit> newHits = new ArrayList<>();
-        for(SearchHit hit : response.getInternalResponse().getHits().getHitsList()) {
+        for (SearchHit hit : response.getInternalResponse().getHits().getHitsList()) {
             org.opensearch.search.SearchHit ogHit = findHitWithId(originalResponse, hit.getDocId());
             newHits.add(TranslateHitToOs(hit, ogHit));
         }
@@ -407,35 +448,38 @@ public class ProtoTranslationUtils {
         return new SearchResponse(
             new org.opensearch.action.search.SearchResponseSections(
                 new org.opensearch.search.SearchHits(
-                    newHits.toArray(hitBuf), 
+                    newHits.toArray(hitBuf),
                     new org.apache.lucene.search.TotalHits(
                         response.getInternalResponse().getHits().getTotalHits().getValue(),
-                        response.getInternalResponse().getHits().getTotalHits().getRelation() == TotalHits.Relation.EQUAL_TO ?
-                            org.apache.lucene.search.TotalHits.Relation.EQUAL_TO :
-                            org.apache.lucene.search.TotalHits.Relation.GREATER_THAN_OR_EQUAL_TO
-                    ), 
-                    response.getInternalResponse().getHits().getMaxScore(), 
-                    originalResponse.getHits().getSortFields(), 
-                    response.getInternalResponse().getHits().getCollapseField(), 
-                    originalResponse.getHits().getCollapseValues()), 
-                newAggs, 
-                newSuggest, 
-                response.getInternalResponse().getTimedOut(), 
-                response.getInternalResponse().getTerminatedEarly(), 
-                new SearchProfileShardResults(originalResponse.getProfileResults()), 
-                response.getInternalResponse().getNumReducePhases(), 
-                originalResponse.getInternalResponse().getSearchExtBuilders()),
-            response.hasScrollId() ? response.getScrollId() : null, 
-            response.getTotalShards(), 
+                        response.getInternalResponse().getHits().getTotalHits().getRelation() == TotalHits.Relation.EQUAL_TO
+                            ? org.apache.lucene.search.TotalHits.Relation.EQUAL_TO
+                            : org.apache.lucene.search.TotalHits.Relation.GREATER_THAN_OR_EQUAL_TO
+                    ),
+                    response.getInternalResponse().getHits().getMaxScore(),
+                    originalResponse.getHits().getSortFields(),
+                    response.getInternalResponse().getHits().getCollapseField(),
+                    originalResponse.getHits().getCollapseValues()
+                ),
+                newAggs,
+                newSuggest,
+                response.getInternalResponse().getTimedOut(),
+                response.getInternalResponse().getTerminatedEarly(),
+                new SearchProfileShardResults(originalResponse.getProfileResults()),
+                response.getInternalResponse().getNumReducePhases(),
+                originalResponse.getInternalResponse().getSearchExtBuilders()
+            ),
+            response.hasScrollId() ? response.getScrollId() : null,
+            response.getTotalShards(),
             response.getSuccessfulShards(),
             response.getSkippedShards(),
             response.getTookInMillis(),
             new SearchResponse.PhaseTook(response.getPhaseTook().getPhaseTookMapMap()),
             originalResponse.getShardFailures(),
             new SearchResponse.Clusters(
-                response.getClusters().getTotal(), 
-                response.getClusters().getSuccessful(), 
-                response.getClusters().getSkipped()),
+                response.getClusters().getTotal(),
+                response.getClusters().getSuccessful(),
+                response.getClusters().getSkipped()
+            ),
             response.hasPointInTimeId() ? response.getPointInTimeId() : null
         );
 

@@ -25,7 +25,6 @@ import org.opensearch.remoteprocessor.processors.RemoteSearchResponseProcessor;
 import org.opensearch.search.pipeline.Processor;
 import org.opensearch.search.pipeline.SearchResponseProcessor;
 
-
 public class RemoteProcessorPlugin extends Plugin implements SearchPipelinePlugin {
 
     public Map<String, Processor.Factory<SearchResponseProcessor>> getResponseProcessors(Parameters parameters) {

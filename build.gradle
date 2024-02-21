@@ -16,6 +16,7 @@ buildscript {
 
     dependencies {
         classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.23.2"
         classpath "io.grpc:grpc-all:${grpc_ver}"
     }
 }
@@ -24,6 +25,7 @@ plugins {
     id 'java'
     id 'idea'
     id 'com.google.protobuf' version '0.9.4'
+    id 'com.diffplug.spotless' version '6.23.0'
     id "io.freefair.lombok" version '8.4'
 }
 
@@ -162,6 +164,18 @@ testClusters.integTest {
 
 run {
     useCluster testClusters.integTest
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        importOrder 'java', 'javax', 'org', 'com'
+        target project.fileTree(project.rootDir) {
+            include 'src/**/*.*'
+        }
+
+        eclipse().configFile rootProject.file('.eclipseformat.xml')
+    }
 }
 
 // updateVersion: Task to auto update version to the next development iteration
