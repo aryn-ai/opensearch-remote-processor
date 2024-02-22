@@ -41,7 +41,6 @@ import org.opensearch.search.profile.SearchProfileShardResults;
 import org.opensearch.test.OpenSearchTestCase;
 
 public class ProtoTranslationUtilsTests extends OpenSearchTestCase {
-    // Oh boy, here we go.
 
     private org.opensearch.action.search.SearchRequest osRequest;
 
