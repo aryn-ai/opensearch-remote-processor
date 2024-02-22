@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Aryn
+ * Copyright 2024 Aryn, Inc.
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -17,29 +17,27 @@
  */
 package org.opensearch.remoteprocessor;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+import static org.hamcrest.Matchers.containsString;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
 import org.opensearch.client.RestClient;
-import org.opensearch.plugins.Plugin;
 import org.opensearch.test.OpenSearchIntegTestCase;
 import org.opensearch.test.rest.OpenSearchRestTestCase;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-
-import static org.hamcrest.Matchers.containsString;
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 @OpenSearchIntegTestCase.ClusterScope(scope = OpenSearchIntegTestCase.Scope.SUITE)
 public class RemoteProcessorPluginIT extends OpenSearchRestTestCase {
 
     public void testPluginInstalled() throws IOException, ParseException {
-        try(RestClient client = client()) {
+        try (RestClient client = client()) {
             Response response = client.performRequest(new Request("GET", "/_cat/plugins"));
             String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 

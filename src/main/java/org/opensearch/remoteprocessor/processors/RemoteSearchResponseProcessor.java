@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Aryn
+ * Copyright 2024 Aryn, Inc.
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -26,6 +26,9 @@ import java.util.Map;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
 import org.opensearch.core.action.ActionListener;
+import org.opensearch.grpc.ProcessResponseRequest;
+import org.opensearch.grpc.ProcessResponseResponse;
+import org.opensearch.grpc.RemoteProcessorServiceGrpc;
 import org.opensearch.search.pipeline.AbstractProcessor;
 import org.opensearch.search.pipeline.PipelineProcessingContext;
 import org.opensearch.search.pipeline.Processor;
@@ -36,11 +39,6 @@ import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
-import lombok.Getter;
-
-import org.opensearch.grpc.ProcessResponseRequest;
-import org.opensearch.grpc.ProcessResponseResponse;
-import org.opensearch.grpc.RemoteProcessorServiceGrpc;
 
 public class RemoteSearchResponseProcessor extends AbstractProcessor implements SearchResponseProcessor {
     public static final String TYPE = "remote_processor";
@@ -71,20 +69,23 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
     }
 
     @Override
-    public void processResponseAsync(SearchRequest request, SearchResponse response, PipelineProcessingContext ctx, ActionListener<SearchResponse> listener) {
+    public void processResponseAsync(
+        SearchRequest request,
+        SearchResponse response,
+        PipelineProcessingContext ctx,
+        ActionListener<SearchResponse> listener
+    ) {
         try {
             // Serialize the request, response, context, and then send it to endpoint.
             // Wait for response, deserialize it, and return it.
             ProcessResponseRequest grpcRequest = buildRequest(request, response, ctx);
             System.out.println(grpcRequest.toString());
-            sendRequest(grpcRequest, ActionListener.wrap(
-                    grpcResponse -> {
-                        listener.onResponse(parseResponse(grpcResponse, response));
-                    },
-                    e -> {
-                        listener.onFailure(e);
-                    }
-            ));
+            sendRequest(
+                grpcRequest,
+                ActionListener.wrap(grpcResponse -> { listener.onResponse(parseResponse(grpcResponse, response)); }, e -> {
+                    listener.onFailure(e);
+                })
+            );
         } catch (IOException e) {
             System.out.println(e.getMessage());
             listener.onFailure(e);
@@ -92,12 +93,14 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
 
     }
 
-    private ProcessResponseRequest buildRequest(SearchRequest request, SearchResponse response, PipelineProcessingContext ctx) throws IOException {
-        return ProcessResponseRequest.newBuilder()
-                .setSearchRequest(ProtoTranslationUtils.SearchRequestOsToPb(request))
-                .setSearchResponse(ProtoTranslationUtils.SearchResponseOsToPb(response))
-                .setProcessorName(this.processorName)
-                .build();
+    private ProcessResponseRequest buildRequest(SearchRequest request, SearchResponse response, PipelineProcessingContext ctx)
+        throws IOException {
+        return ProcessResponseRequest
+            .newBuilder()
+            .setSearchRequest(ProtoTranslationUtils.SearchRequestOsToPb(request))
+            .setSearchResponse(ProtoTranslationUtils.SearchResponseOsToPb(response))
+            .setProcessorName(this.processorName)
+            .build();
     }
 
     private void sendRequest(ProcessResponseRequest request, ActionListener<ProcessResponseResponse> listener) {
@@ -144,9 +147,13 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
 
         @Override
         public SearchResponseProcessor create(
-                Map<String, org.opensearch.search.pipeline.Processor.Factory<SearchResponseProcessor>> processorFactories,
-                String tag, String description, boolean ignoreFailure, Map<String, Object> config,
-                PipelineContext pipelineContext) throws Exception {
+            Map<String, org.opensearch.search.pipeline.Processor.Factory<SearchResponseProcessor>> processorFactories,
+            String tag,
+            String description,
+            boolean ignoreFailure,
+            Map<String, Object> config,
+            PipelineContext pipelineContext
+        ) throws Exception {
             String endpoint = getConfigParamAsString(config, ENDPOINT_FIELD);
             String processorName = getConfigParamAsString(config, PROCESSOR_NAME_FIELD);
             return new RemoteSearchResponseProcessor(tag, description, ignoreFailure, endpoint, processorName);

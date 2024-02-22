@@ -4,9 +4,8 @@ This document contains a list of maintainers in this repo. See [opensearch-proje
 
 ## Current Maintainers
 
-| Maintainer               | GitHub ID                                               | Affiliation |
-| ------------------------ | ------------------------------------------------------- | ----------- |
-| Amitai Stern             | [AmiStrn](https://github.com/AmiStrn)                   | Logz.io     |
-| Daniel "dB." Doubrovkine | [dblock](https://github.com/dblock)                     | Amazon      |
-| Sarat Vemulapalli        | [saratvemulapalli](https://github.com/saratvemulapalli) | Amazon      |
-| Andriy Redko             | [reta](https://github.com/reta)                         | Aiven       |
+| Maintainer        | GitHub ID                                               | Affiliation |
+|-------------------|---------------------------------------------------------|-------------|
+| Henry Lindeman    | [HenryL27](https://github.com/HenryL27)                 | Aryn        |
+| Austin Lee        | [austintlee](https://github.com/austintlee)             | Aryn        |
+

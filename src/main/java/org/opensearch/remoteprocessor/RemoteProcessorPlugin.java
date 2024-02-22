@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Aryn
+ * Copyright 2024 Aryn, Inc.
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -24,7 +24,6 @@ import org.opensearch.plugins.SearchPipelinePlugin;
 import org.opensearch.remoteprocessor.processors.RemoteSearchResponseProcessor;
 import org.opensearch.search.pipeline.Processor;
 import org.opensearch.search.pipeline.SearchResponseProcessor;
-
 
 public class RemoteProcessorPlugin extends Plugin implements SearchPipelinePlugin {
 

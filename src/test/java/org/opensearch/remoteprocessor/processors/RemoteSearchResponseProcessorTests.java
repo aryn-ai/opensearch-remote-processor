@@ -33,18 +33,25 @@ public class RemoteSearchResponseProcessorTests extends OpenSearchTestCase {
     public void setup() {
         this.factory = new RemoteSearchResponseProcessor.Factory();
     }
-    
+
     public void testCreateProcessor_HappyPath() throws Exception {
-        SearchResponseProcessor processor = factory.create(
-            Map.of(), 
-            "remote", 
-            "processor for RPCs", 
-            false, 
-            new HashMap<>(Map.of(
-                RemoteSearchResponseProcessor.ENDPOINT_FIELD, "rps:2796/RemoteProcessorService/ProcessResponse",
-                RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD, "debug"
-            )),
-            null);
+        SearchResponseProcessor processor = factory
+            .create(
+                Map.of(),
+                "remote",
+                "processor for RPCs",
+                false,
+                new HashMap<>(
+                    Map
+                        .of(
+                            RemoteSearchResponseProcessor.ENDPOINT_FIELD,
+                            "rps:2796/RemoteProcessorService/ProcessResponse",
+                            RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD,
+                            "debug"
+                        )
+                ),
+                null
+            );
         assert (processor instanceof RemoteSearchResponseProcessor);
         RemoteSearchResponseProcessor remoteProcessor = (RemoteSearchResponseProcessor) processor;
         assert (remoteProcessor.getDescription().equals("processor for RPCs"));
@@ -57,15 +64,16 @@ public class RemoteSearchResponseProcessorTests extends OpenSearchTestCase {
         assertThrows(
             String.format(Locale.ROOT, "Missing field %s", RemoteSearchResponseProcessor.ENDPOINT_FIELD),
             IllegalArgumentException.class,
-            () -> { factory.create(
-                Map.of(), 
-                "remote", 
-                "processor for RPCs", 
-                false,
-                    new HashMap<>(Map.of(
-                    RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD, "debug"
-                )),
-                null);
+            () -> {
+                factory
+                    .create(
+                        Map.of(),
+                        "remote",
+                        "processor for RPCs",
+                        false,
+                        new HashMap<>(Map.of(RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD, "debug")),
+                        null
+                    );
             }
         );
     }
@@ -74,16 +82,24 @@ public class RemoteSearchResponseProcessorTests extends OpenSearchTestCase {
         assertThrows(
             String.format(Locale.ROOT, "%s must be of type string", RemoteSearchResponseProcessor.ENDPOINT_FIELD),
             IllegalArgumentException.class,
-            () -> { factory.create(
-                Map.of(), 
-                "remote", 
-                "processor for RPCs", 
-                false, 
-                new HashMap<>(Map.of(
-                    RemoteSearchResponseProcessor.ENDPOINT_FIELD, 2796,
-                    RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD, "debug"
-                )),
-                null);
+            () -> {
+                factory
+                    .create(
+                        Map.of(),
+                        "remote",
+                        "processor for RPCs",
+                        false,
+                        new HashMap<>(
+                            Map
+                                .of(
+                                    RemoteSearchResponseProcessor.ENDPOINT_FIELD,
+                                    2796,
+                                    RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD,
+                                    "debug"
+                                )
+                        ),
+                        null
+                    );
             }
         );
     }
@@ -92,15 +108,18 @@ public class RemoteSearchResponseProcessorTests extends OpenSearchTestCase {
         assertThrows(
             String.format(Locale.ROOT, "Missing field %s", RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD),
             IllegalArgumentException.class,
-            () -> { factory.create(
-                Map.of(), 
-                "remote", 
-                "processor for RPCs", 
-                false, 
-                new HashMap<>(Map.of(
-                    RemoteSearchResponseProcessor.ENDPOINT_FIELD, "rps:2796/RemoteProcessorService/ProcessResponse"
-                )),
-                null);
+            () -> {
+                factory
+                    .create(
+                        Map.of(),
+                        "remote",
+                        "processor for RPCs",
+                        false,
+                        new HashMap<>(
+                            Map.of(RemoteSearchResponseProcessor.ENDPOINT_FIELD, "rps:2796/RemoteProcessorService/ProcessResponse")
+                        ),
+                        null
+                    );
             }
         );
     }
@@ -109,16 +128,24 @@ public class RemoteSearchResponseProcessorTests extends OpenSearchTestCase {
         assertThrows(
             String.format(Locale.ROOT, "%s must be of type string", RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD),
             IllegalArgumentException.class,
-            () -> { factory.create(
-                Map.of(), 
-                "remote", 
-                "processor for RPCs", 
-                false, 
-                new HashMap<>(Map.of(
-                    RemoteSearchResponseProcessor.ENDPOINT_FIELD, "rps:2796/RemoteProcessorService/ProcessResponse",
-                    RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD, 1532
-                )),
-                null);
+            () -> {
+                factory
+                    .create(
+                        Map.of(),
+                        "remote",
+                        "processor for RPCs",
+                        false,
+                        new HashMap<>(
+                            Map
+                                .of(
+                                    RemoteSearchResponseProcessor.ENDPOINT_FIELD,
+                                    "rps:2796/RemoteProcessorService/ProcessResponse",
+                                    RemoteSearchResponseProcessor.PROCESSOR_NAME_FIELD,
+                                    1532
+                                )
+                        ),
+                        null
+                    );
             }
         );
     }

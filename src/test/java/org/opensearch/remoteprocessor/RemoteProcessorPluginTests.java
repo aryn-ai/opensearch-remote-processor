@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Aryn
+ * Copyright 2024 Aryn, Inc.
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -26,7 +26,7 @@ import org.opensearch.search.pipeline.SearchResponseProcessor;
 import org.opensearch.test.OpenSearchTestCase;
 
 public class RemoteProcessorPluginTests extends OpenSearchTestCase {
-    
+
     public void testPluginHasProcessor() throws IOException {
         RemoteProcessorPlugin plugin = new RemoteProcessorPlugin();
         Map<String, Processor.Factory<SearchResponseProcessor>> factories = plugin.getResponseProcessors(null);
