@@ -1,4 +1,4 @@
 Remote Processor Plugin
 
-Aryn, Inc (https://aryn.ai/)
-Copyright 2024 Aryn
+Aryn, Inc. (https://aryn.ai/)
+Copyright 2024 Aryn, Inc.

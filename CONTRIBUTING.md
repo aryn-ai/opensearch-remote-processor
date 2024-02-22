@@ -105,7 +105,7 @@ New files in your code contributions should contain the following license header
 
 ```
 /*
- * Copyright 2024 Aryn
+ * Copyright 2024 Aryn, Inc.
  * Copyright OpenSearch Contributors
  * SPDX-License-Identifier: Apache-2.0
  *
