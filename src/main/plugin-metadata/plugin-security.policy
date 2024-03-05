@@ -1,0 +1,5 @@
+grant {
+    permission java.lang.RuntimePermission "getClassLoader";
+    permission java.net.NetPermission "getProxySelector";
+    permission java.net.SocketPermission "*", "connect,resolve";
+};

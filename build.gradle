@@ -171,7 +171,8 @@ spotless {
         removeUnusedImports()
         importOrder 'java', 'javax', 'org', 'com'
         target project.fileTree(project.rootDir) {
-            include 'src/**/*.*'
+            include 'src/main/java/**/*.*'
+            include 'src/test/**/*.*'
         }
 
         eclipse().configFile rootProject.file('.eclipseformat.xml')

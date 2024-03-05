@@ -19,9 +19,14 @@ package org.opensearch.remoteprocessor.processors;
 
 import java.io.IOException;
 import java.security.AccessController;
+import java.security.KeyStore;
 import java.security.PrivilegedExceptionAction;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.net.ssl.*;
 
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
@@ -34,10 +39,7 @@ import org.opensearch.search.pipeline.PipelineProcessingContext;
 import org.opensearch.search.pipeline.Processor;
 import org.opensearch.search.pipeline.SearchResponseProcessor;
 
-import io.grpc.ChannelCredentials;
-import io.grpc.Grpc;
-import io.grpc.InsecureChannelCredentials;
-import io.grpc.ManagedChannel;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 public class RemoteSearchResponseProcessor extends AbstractProcessor implements SearchResponseProcessor {
@@ -49,13 +51,25 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
     private final String processorName;
     private final RemoteProcessorServiceGrpc.RemoteProcessorServiceStub rpsRpcClient;
 
-    protected RemoteSearchResponseProcessor(String tag, String description, boolean ignoreFailure, String endpoint, String processorName) {
+    protected RemoteSearchResponseProcessor(String tag, String description, boolean ignoreFailure, String endpoint, String processorName)
+        throws Exception {
         super(tag, description, ignoreFailure);
         this.endpoint = endpoint;
         this.processorName = processorName;
-        ChannelCredentials creds = InsecureChannelCredentials.create();
-        ManagedChannel chan = Grpc.newChannelBuilder(this.endpoint, creds).build();
+
+        ChannelCredentials sslCreds = makeTlsCreds();
+        ManagedChannel chan = AccessController.doPrivileged((PrivilegedExceptionAction<ManagedChannel>) () -> {
+            return Grpc.newChannelBuilder(this.endpoint, sslCreds).build();
+        });
         this.rpsRpcClient = RemoteProcessorServiceGrpc.newStub(chan);
+    }
+
+    private static ChannelCredentials makeTlsCreds() throws Exception {
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init((KeyStore) null);
+        TrustManager defaultTM = tmf.getTrustManagers()[0];
+        TrustSelfSignedCertTrustManager trustingTM = TrustSelfSignedCertTrustManager.wrap((X509TrustManager) defaultTM);
+        return TlsChannelCredentials.newBuilder().trustManager(trustingTM).build();
     }
 
     @Override
@@ -170,6 +184,38 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
             return (String) obj;
         }
 
+    }
+
+    private static class TrustSelfSignedCertTrustManager implements X509TrustManager {
+        private X509TrustManager delegate;
+
+        private TrustSelfSignedCertTrustManager(X509TrustManager delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            delegate.checkClientTrusted(chain, authType);
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            if (chain.length == 1) {
+                // Cert is self-signed, so trust it.
+                return;
+            } else {
+                delegate.checkServerTrusted(chain, authType);
+            }
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+
+        public static TrustSelfSignedCertTrustManager wrap(X509TrustManager delegate) {
+            return new TrustSelfSignedCertTrustManager(delegate);
+        }
     }
 
 }
