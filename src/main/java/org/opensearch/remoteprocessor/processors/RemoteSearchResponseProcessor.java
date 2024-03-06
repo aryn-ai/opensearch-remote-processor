@@ -54,12 +54,22 @@ public class RemoteSearchResponseProcessor extends AbstractProcessor implements 
     protected RemoteSearchResponseProcessor(String tag, String description, boolean ignoreFailure, String endpoint, String processorName)
         throws Exception {
         super(tag, description, ignoreFailure);
-        this.endpoint = endpoint;
         this.processorName = processorName;
 
-        ChannelCredentials sslCreds = makeTlsCreds();
+        ChannelCredentials creds;
+        if (endpoint.startsWith("http://")) {
+            creds = InsecureChannelCredentials.create();
+            this.endpoint = endpoint.substring(7);
+        } else {
+            creds = makeTlsCreds();
+            if (endpoint.startsWith("https://")) {
+                this.endpoint = endpoint.substring(8);
+            } else {
+                this.endpoint = endpoint;
+            }
+        }
         ManagedChannel chan = AccessController.doPrivileged((PrivilegedExceptionAction<ManagedChannel>) () -> {
-            return Grpc.newChannelBuilder(this.endpoint, sslCreds).build();
+            return Grpc.newChannelBuilder(this.endpoint, creds).build();
         });
         this.rpsRpcClient = RemoteProcessorServiceGrpc.newStub(chan);
     }
