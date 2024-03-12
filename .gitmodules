@@ -1,3 +1,0 @@
-[submodule "protocols"]
-	path = protocols
-	url = git@github.com:aryn-ai/protocols.git
